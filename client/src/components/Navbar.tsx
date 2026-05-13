@@ -14,7 +14,8 @@ const Navbar = () => {
     <nav className="bg-gray-900 border-b border-gray-800 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/events" className="flex items-center gap-2">
-          <span className="text-2xl">🎟️</span>
+          {/* <span className="text-2xl">🎟️</span> */}
+          <img src="/images/icon2.png" alt="smartqueue" className="w-8 h-8 object-contain" />
           <span className="text-xl font-bold text-white">SmartQueue</span>
         </Link>
 

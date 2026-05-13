@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ticket Background (Blue) -->
+  <path d="M4 6C4 4.89543 4.89543 4 6 4H26C27.1046 4 28 4.89543 28 6V10C26.3431 10 25 11.3431 25 13C25 14.6569 26.3431 16 28 16V26C28 27.1046 27.1046 28 26 28H6C4.89543 28 4 27.1046 4 26V16C5.65685 16 7 14.6569 7 13C7 11.3431 5.65685 10 4 10V6Z" fill="#0056D2"/>
+
+  <!-- Confirmed Checkmark (White) -->
+  <path d="M12 16.5L15 19.5L21 13.5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Subtle Ticket Details (Dashed Lines) -->
+  <line x1="10" y1="9" x2="22" y2="9" stroke="white" stroke-opacity="0.5" stroke-dasharray="2 2"/>
+  <line x1="10" y1="23" x2="22" y2="23" stroke="white" stroke-opacity="0.5" stroke-dasharray="2 2"/>
+</svg>
