@@ -10,6 +10,7 @@ import bookingRoutes from "./routes/booking.routes";
 import { startBookingWorker } from "./workers/booking.worker";
 import { connectProducer } from "./kafka/producer";
 import { startPricingConsumer } from "./kafka/consumer";
+import { startEmailConsumer } from "./kafka/emailConsumer";
 import { initSocketServer } from "./socket/socket.server";
 
 const app = express();
@@ -40,6 +41,7 @@ const bootstrap = async () => {
 
   // Start pricing engine consumer
   await startPricingConsumer();
+  await startEmailConsumer(); 
 
   httpServer.listen(ENV.PORT, () => {
     console.log(`🚀 Server running on http://localhost:${ENV.PORT}`);
