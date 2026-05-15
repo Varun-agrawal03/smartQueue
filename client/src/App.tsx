@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import EventsPage from "./pages/EventsPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import MyBookingsPage from "./pages/MyBookingsPage";
+import LandingPage from "./pages/LandingPage";
 import Navbar from "./components/Navbar";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -17,32 +18,20 @@ function App() {
     <div className="min-h-screen bg-gray-950 text-white">
       <Navbar />
       <Routes>
-        <Route path="/" element={<Navigate to="/events" />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/"          element={<LandingPage />} />
+        <Route path="/login"     element={<LoginPage />} />
+        <Route path="/register"  element={<RegisterPage />} />
         <Route
           path="/events"
-          element={
-            <ProtectedRoute>
-              <EventsPage />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><EventsPage /></ProtectedRoute>}
         />
         <Route
           path="/events/:id"
-          element={
-            <ProtectedRoute>
-              <EventDetailPage />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>}
         />
         <Route
           path="/my-bookings"
-          element={
-            <ProtectedRoute>
-              <MyBookingsPage />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><MyBookingsPage /></ProtectedRoute>}
         />
       </Routes>
     </div>

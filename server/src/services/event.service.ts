@@ -9,38 +9,38 @@ export interface CreateEventInput {
   base_price: number;
   rows: number;
   seats_per_row: number;
+  category?: string;
+  thumbnail_url?: string;
+  artist_or_team?: string;
 }
 
-// Create event + auto-generate all seats
 export const createEvent = async (input: CreateEventInput) => {
   const {
-    title,
-    venue,
-    description,
-    event_date,
-    total_seats,
-    base_price,
-    rows,
-    seats_per_row,
+    title, venue, description, event_date,
+    total_seats, base_price, rows, seats_per_row,
+    category = "concert",
+    thumbnail_url = "",
+    artist_or_team = "",
   } = input;
 
-  // Insert event
   const eventResult = await query(
-    `INSERT INTO events (title, venue, description, event_date, total_seats, base_price, status)
-     VALUES ($1, $2, $3, $4, $5, $6, 'upcoming')
+    `INSERT INTO events
+       (title, venue, description, event_date, total_seats,
+        base_price, status, category, thumbnail_url, artist_or_team)
+     VALUES ($1,$2,$3,$4,$5,$6,'upcoming',$7,$8,$9)
      RETURNING *`,
-    [title, venue, description, event_date, total_seats, base_price]
+    [title, venue, description, event_date, total_seats,
+     base_price, category, thumbnail_url, artist_or_team]
   );
 
   const event = eventResult.rows[0];
 
-  // Auto-generate seats (e.g. A1, A2, B1, B2...)
   const rowLabels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
   const seatInserts: Promise<unknown>[] = [];
 
   for (let r = 0; r < rows; r++) {
     for (let s = 1; s <= seats_per_row; s++) {
-      const row_label = rowLabels[r];
+      const row_label   = rowLabels[r];
       const seat_number = `${row_label}${s}`;
       seatInserts.push(
         query(
@@ -53,38 +53,45 @@ export const createEvent = async (input: CreateEventInput) => {
   }
 
   await Promise.all(seatInserts);
-
   return event;
 };
 
-// Get all events
 export const getAllEvents = async () => {
   const result = await query(
-    `SELECT id, title, venue, description, event_date, 
-            total_seats, base_price, status, created_at
+    `SELECT id, title, venue, description, event_date,
+            total_seats, base_price, status, category,
+            thumbnail_url, artist_or_team, created_at
      FROM events
      ORDER BY event_date ASC`
   );
   return result.rows;
 };
 
-// Get single event by ID
+export const getEventsByCategory = async (category: string) => {
+  const result = await query(
+    `SELECT id, title, venue, description, event_date,
+            total_seats, base_price, status, category,
+            thumbnail_url, artist_or_team, created_at
+     FROM events
+     WHERE category = $1
+     ORDER BY event_date ASC`,
+    [category]
+  );
+  return result.rows;
+};
+
 export const getEventById = async (eventId: string) => {
   const result = await query(
     `SELECT id, title, venue, description, event_date,
-            total_seats, base_price, status, created_at
+            total_seats, base_price, status, category,
+            thumbnail_url, artist_or_team, created_at
      FROM events WHERE id = $1`,
     [eventId]
   );
-
-  if (result.rows.length === 0) {
-    throw new Error("Event not found");
-  }
-
+  if (result.rows.length === 0) throw new Error("Event not found");
   return result.rows[0];
 };
 
-// Get seats for an event
 export const getEventSeats = async (eventId: string) => {
   const result = await query(
     `SELECT id, seat_number, row_label, status, locked_until
@@ -92,6 +99,23 @@ export const getEventSeats = async (eventId: string) => {
      WHERE event_id = $1
      ORDER BY row_label ASC, seat_number ASC`,
     [eventId]
+  );
+  return result.rows;
+};
+
+export const getLandingPageEvents = async () => {
+  const result = await query(
+    `SELECT
+       e.id, e.title, e.venue, e.event_date,
+       e.base_price, e.status, e.category,
+       e.thumbnail_url, e.artist_or_team,
+       COUNT(s.id) FILTER (WHERE s.status = 'available') AS available_seats,
+       COUNT(s.id) AS total_seats
+     FROM events e
+     LEFT JOIN seats s ON s.event_id = e.id
+     WHERE e.status != 'cancelled'
+     GROUP BY e.id
+     ORDER BY e.event_date ASC`
   );
   return result.rows;
 };

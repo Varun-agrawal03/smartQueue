@@ -7,13 +7,13 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   return (
-    <nav className="bg-gray-900 border-b border-gray-800 px-6 py-4">
+    <nav className="bg-gray-900/80 backdrop-blur border-b border-gray-800 px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/events" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           {/* <span className="text-2xl">🎟️</span> */}
           <img src="/images/icon2.png" alt="smartqueue" className="w-8 h-8 object-contain" />
           <span className="text-xl font-bold text-white">SmartQueue</span>
@@ -22,42 +22,24 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {isAuthenticated ? (
             <>
-              <Link
-                to="/events"
-                className="text-gray-300 hover:text-white transition"
+              <Link to="/events"       className="text-gray-300 hover:text-white transition text-sm">Events</Link>
+              <Link to="/my-bookings"  className="text-gray-300 hover:text-white transition text-sm">My Bookings</Link>
+              <span className="text-gray-400 text-sm">👋 {user?.name}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition"
               >
-                Events
-              </Link>
-              <Link
-                to="/my-bookings"
-                className="text-gray-300 hover:text-white transition"
-              >
-                My Bookings
-              </Link>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-400 text-sm">
-                  👋 {user?.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition"
-                >
-                  Logout
-                </button>
-              </div>
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                className="text-gray-300 hover:text-white transition"
-              >
+              <Link to="/login"
+                className="text-gray-300 hover:text-white transition text-sm">
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg transition"
-              >
+              <Link to="/register"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg transition">
                 Register
               </Link>
             </>
