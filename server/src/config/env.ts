@@ -26,11 +26,23 @@ export const ENV = {
     secret: process.env.JWT_SECRET || "fallback_secret",
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
   },
-  EMAIL: {
-    host: process.env.EMAIL_HOST || "smtp.gmail.com",
-    port: Number(process.env.EMAIL_PORT) || 587,
-    user: process.env.EMAIL_USER || "",
-    pass: process.env.EMAIL_PASS || "",
-    from: process.env.EMAIL_FROM || "SmartQueue <noreply@smartqueue.com>",
+  // EMAIL: {
+  //   host: process.env.EMAIL_HOST || "smtp.gmail.com",
+  //   port: Number(process.env.EMAIL_PORT) || 587,
+  //   user: process.env.EMAIL_USER || "",
+  //   pass: process.env.EMAIL_PASS || "",
+  //   from: process.env.EMAIL_FROM || "SmartQueue <noreply@smartqueue.com>",
+  // },
+
+  // BREVO: {
+  //   apiKey:      process.env.BREVO_API_KEY || "",
+  //   senderEmail: process.env.BREVO_SENDER_EMAIL || "",
+  //   senderName:  process.env.BREVO_SENDER_NAME || "SmartQueue",
+  // },
+  BREVO: {
+    smtpUser: process.env.BREVO_SMTP_USER!,
+    smtpPass: process.env.BREVO_SMTP_PASS!,
+    senderEmail: process.env.BREVO_SENDER_EMAIL!,
+    senderName: process.env.BREVO_SENDER_NAME!,
   },
 };

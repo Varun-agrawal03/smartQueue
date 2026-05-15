@@ -1,12 +1,11 @@
 import { Router, Response } from "express";
 import { Queue } from "bullmq";
 import { authMiddleware, AuthRequest } from "../middleware/auth.middleware";
-import { getUserBookings } from "../services/booking.service";
+import { getUserBookings, getUserBookingGroups } from "../services/booking.service";
 import { ENV } from "../config/env";
 
 const router = Router();
 
-// BullMQ queue instance
 const bookingQueue = new Queue("booking-queue", {
   connection: {
     host: ENV.REDIS.host,
@@ -14,16 +13,26 @@ const bookingQueue = new Queue("booking-queue", {
   },
 });
 
-// POST /api/bookings  ← book a seat (protected)
+// POST /api/bookings — multi-seat booking
 router.post(
   "/",
   authMiddleware,
   async (req: AuthRequest, res: Response): Promise<void> => {
-    const { seatId, eventId } = req.body;
+    const { seatIds, eventId } = req.body;
     const userId = req.userId;
 
-    if (!seatId || !eventId) {
-      res.status(400).json({ error: "seatId and eventId are required" });
+    if (!seatIds || !Array.isArray(seatIds) || seatIds.length === 0) {
+      res.status(400).json({ error: "seatIds array is required" });
+      return;
+    }
+
+    if (seatIds.length > 6) {
+      res.status(400).json({ error: "Maximum 6 seats per booking" });
+      return;
+    }
+
+    if (!eventId) {
+      res.status(400).json({ error: "eventId is required" });
       return;
     }
 
@@ -33,22 +42,19 @@ router.post(
     }
 
     try {
-      // Add job to queue instead of processing directly
       const job = await bookingQueue.add(
-        "book-seat",
-        { userId, seatId, eventId },
+        "book-seats",
+        { userId, seatIds, eventId },
         {
-          attempts: 3,         // retry up to 3 times on failure
-          backoff: {
-            type: "exponential",
-            delay: 1000,       // wait 1s, 2s, 4s between retries
-          },
+          attempts: 3,
+          backoff: { type: "exponential", delay: 1000 },
         }
       );
 
       res.status(202).json({
         message: "Booking request queued",
         jobId: job.id,
+        seatsRequested: seatIds.length,
       });
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -58,7 +64,7 @@ router.post(
   }
 );
 
-// GET /api/bookings/job/:jobId  ← check booking job status
+// GET /api/bookings/job/:jobId
 router.get(
   "/job/:jobId",
   authMiddleware,
@@ -72,8 +78,8 @@ router.get(
         return;
       }
 
-      const state = await job.getState();
-      const result = job.returnvalue;
+      const state      = await job.getState();
+      const result     = job.returnvalue;
       const failReason = job.failedReason;
 
       res.json({ jobId, state, result: result || null, failReason: failReason || null });
@@ -85,7 +91,7 @@ router.get(
   }
 );
 
-// GET /api/bookings/my  ← get my bookings (protected)
+// GET /api/bookings/my — individual bookings
 router.get(
   "/my",
   authMiddleware,
@@ -93,6 +99,22 @@ router.get(
     try {
       const bookings = await getUserBookings(req.userId!);
       res.json({ bookings });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).json({ error: err.message });
+      }
+    }
+  }
+);
+
+// GET /api/bookings/my/groups — grouped bookings
+router.get(
+  "/my/groups",
+  authMiddleware,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const groups = await getUserBookingGroups(req.userId!);
+      res.json({ groups });
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).json({ error: err.message });
